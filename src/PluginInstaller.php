@@ -17,14 +17,21 @@ use Composer\Plugin\Capability\CommandProvider;
 use Composer\Plugin\Capable;
 use Composer\Plugin\PluginInterface;
 
-class PluginInstallerPlugin implements PluginInterface, Capable, CommandProvider
+class PluginInstaller implements PluginInterface, Capable, CommandProvider
 {
+    const PLUGIN_PATH = 'plugins';
+
+    protected $filesystem;
+
     /**
      * {@inheritdoc}
      */
     public function activate(Composer $composer, IOInterface $io)
     {
+        $repository = new ProxyRepository(static::PLUGIN_PATH, 2, $io, $composer->getConfig());
+        $composer->getRepositoryManager()->addRepository($repository);
     }
+
 
     /**
      * {@inheritdoc}
