@@ -13,43 +13,24 @@ namespace PHPDish\PluginInstaller;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Composer\Plugin\Capability\CommandProvider;
-use Composer\Plugin\Capable;
 use Composer\Plugin\PluginInterface;
+use Composer\Util\Filesystem;
 
-class PluginInstaller implements PluginInterface, Capable, CommandProvider
+class PluginInstaller implements PluginInterface
 {
+    /**
+     * @var string
+     */
     const PLUGIN_PATH = 'plugins';
-
-    protected $filesystem;
 
     /**
      * {@inheritdoc}
      */
     public function activate(Composer $composer, IOInterface $io)
     {
+        (new Filesystem())->ensureDirectoryExists(static::PLUGIN_PATH);
+
         $repository = new ProxyRepository(static::PLUGIN_PATH, 2, $io, $composer->getConfig());
         $composer->getRepositoryManager()->addRepository($repository);
-    }
-
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCapabilities()
-    {
-        return [
-            CommandProvider::class => __CLASS__
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getCommands()
-    {
-        return [
-            new Command\ResolvePrivatePluginCommand()
-        ];
     }
 }

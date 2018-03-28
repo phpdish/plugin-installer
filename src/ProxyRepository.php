@@ -49,19 +49,24 @@ class ProxyRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $foundFiles = (new Finder())->in($this->dir . '/')->depth("<={$this->depth}")->name('composer.json')
+        $foundFiles = (new Finder())->in($this->dir)->depth("<={$this->depth}")->name('composer.json')
             ->contains('/"type"\s*:\s*"phpdish-plugin"/');
 
-        count($foundFiles);
-        exit;
         foreach ($foundFiles as $file) {
             $pathRepository = new PathRepository([
                 'type' => 'path',
-                'url' => $file->getPath()
+                'url' => $file->getPath(),
             ], $this->io, $this->config);
+
             foreach ($pathRepository->getPackages() as $package) {
+                $reflection = new \ReflectionObject($package);
+                $property = $reflection->getProperty('repository');
+                $property->setAccessible(true);
+                $property->setValue($package, $this);
                 $this->addPackage($package);
             }
+            unset($pathRepository);
+            $pathRepository = null;
         }
     }
 }
